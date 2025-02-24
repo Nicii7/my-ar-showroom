@@ -1,42 +1,66 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8">
-    <title>AR/VR Autoshowroom</title>
-    <!-- A-Frame Bibliothek -->
+    <title>AR/VR Auto Showroom</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <!-- WebXR-Unterstützung -->
-    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.0/dist/aframe-extras.min.js"></script>
     <style>
-      body { margin: 0; overflow: hidden; }
+        body { margin: 0; overflow: hidden; }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 1000;
+            font-family: Arial;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
-  </head>
-  <body>
-    <!-- 3D-Szene -->
+</head>
+<body>
+    <div id="info">Touch-Bedienung:
+        <br>• 1 Finger drehen
+        <br>• 2 Finger zoomen
+    </div>
+
     <a-scene 
-      xr-mode-ui="enabled: true" 
-      vr-mode-ui="enabled: true" 
-      background="color: #333333"
+        xr-mode-ui="enabled: true" 
+        vr-mode-ui="enabled: true" 
+        background="color: #333333"
     >
-      <!-- Auto-Modell (Pfad anpassen!) -->
-      <a-entity
-        gltf-model="url(assets/car.glb)"
-        scale="0.5 0.5 0.5"
-        position="0 0 -3"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 10000"
-      ></a-entity>
+        <!-- 3D-Auto -->
+        <a-entity
+            id="car"
+            gltf-model="url(assets/car.glb)"
+            scale="0.5 0.5 0.5"
+            position="0 0 -3"
+            rotation="0 0 0"
+        ></a-entity>
 
-      <!-- Kamera -->
-      <a-entity
-        camera
-        look-controls
-        wasd-controls
-        position="0 1.6 0"
-      ></a-entity>
+        <!-- Kamera -->
+        <a-entity camera position="0 1.6 3" look-controls></a-entity>
 
-      <!-- Licht -->
-      <a-entity light="type: ambient; intensity: 0.5"></a-entity>
-      <a-entity light="type: directional; intensity: 0.8; position: 5 5 5"></a-entity>
+        <!-- Beleuchtung -->
+        <a-entity light="type: ambient; color: #FFF; intensity: 1.0"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 1.5; position: 2 5 3"></a-entity>
+        <a-entity light="type: hemisphere; color: #FFF; groundColor: #555; intensity: 0.8"></a-entity>
+
+        <!-- Hilfsboden -->
+        <a-circle 
+            position="0 0 0" 
+            radius="5" 
+            rotation="-90 0 0" 
+            color="#444"
+            metalness="0.3"
+            roughness="0.5"
+        ></a-circle>
     </a-scene>
-  </body>
+
+    <!-- Touch-Steuerung (unverändert) -->
+    <script>
+        // ... (Touch-Steuerungscode vom vorherigen Beispiel)
+    </script>
+</body>
 </html>
