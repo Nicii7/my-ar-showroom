@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>AR/VR Autoshowroom</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-environment-component@7.1.0/dist/aframe-environment-component.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: Arial;
+            z-index: 1000;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: Arial;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Lade Showroom... ⏳</div>
+    <div id="info">ℹ️ Touch-Bedienung:<br>• 1 Finger drehen<br>• 2 Finger zoomen</div>
+
+    <a-scene 
+        environment="preset: forest; dressingAmount: 1000; shadow: true"
+        xr-mode-ui="enabled: true" 
+        vr-mode-ui="enabled: true"
+    >
+        <!-- 3D-Auto -->
+        <a-entity
+            id="car"
+            gltf-model="url(assets/car.glb)"
+            scale="0.1 0.1 0.1"
+            position="0 0 -3"
+            rotation="0 90 0"
+        ></a-entity>
+
+        <!-- Kamera -->
+        <a-entity 
+            camera
+            look-controls
+            position="0 1.6 4"
+            cursor="rayOrigin: mouse"
+        ></a-entity>
+    </a-scene>
+
+    <script>
+        // Touch-Steuerung
+        const car = document.querySelector('#car');
+        let isTouching = false;
+        let startTouch1, startTouch2;
+        let startScale = 0.1;
+        let startRotation = { x: 0, y: 0 };
+
+        // Ladebalken ausblenden
+        document.querySelector('a-scene').addEventListener('loaded', () => {
+            document.getElementById('loading').style.display = 'none';
+        });
+
+        // Touch-Events
+        car.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isTouching = true;
+            
+            if(e.touches.length === 1) {
+                startTouch1 = { 
+                    x: e.touches[0].clientX, 
+                    y: e.touches[0].clientY 
+                };
+                startRotation = car.getAttribute('rotation');
+            }
+
+            if(e.touches.length === 2) {
+                startTouch1 = { 
+                    x: e.touches[0].clientX, 
+                    y: e.touches[0].clientY 
+                };
+                startTouch2 = { 
+                    x: e.touches[1].clientX, 
+                    y: e.touches[1].clientY 
+                };
+                startScale = car.getAttribute('scale').x;
+            }
+        });
+
+        car.addEventListener('touchmove', (e) => {
+            if(!isTouching) return;
+            e.preventDefault();
+
+            // Ein-Finger-Rotation
+            if(e.touches.length === 1) {
+                const deltaX = e.touches[0].clientX - startTouch1.x;
+                const deltaY = e.touches[0].clientY - startTouch1.y;
+                
+                car.setAttribute('rotation', {
+                    x: startRotation.x - deltaY * 0.5,
+                    y: startRotation.y + deltaX * 0.5,
+                    z: 0
+                });
+            }
+
+            // Zwei-Finger-Zoom
+            if(e.touches.length === 2) {
+                const touch1 = { 
+                    x: e.touches[0].clientX, 
+                    y: e.touches[0].clientY 
+                };
+                const touch2 = { 
+                    x: e.touches[1].clientX, 
+                    y: e.touches[1].clientY 
+                };
+
+                const initialDistance = Math.hypot(
+                    startTouch2.x - startTouch1.x,
+                    startTouch2.y - startTouch1.y
+                );
+                
+                const currentDistance = Math.hypot(
+                    touch2.x - touch1.x,
+                    touch2.y - touch1.y
+                );
+
+                const scale = Math.min(
+                    Math.max(startScale * (currentDistance / initialDistance), 0.3),
+                    1.5
+                );
+                car.setAttribute('scale', `${scale} ${scale} ${scale}`);
+            }
+        });
+
+        car.addEventListener('touchend', () => {
+            isTouching = false;
+        });
+    </script>
+</body>
+</html>
