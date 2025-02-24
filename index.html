@@ -2,20 +2,10 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>AR/VR Autoshowroom</title>
+    <title>AR Car Showroom</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aframe-environment-component@7.1.0/dist/aframe-environment-component.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
-        #loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-family: Arial;
-            z-index: 1000;
-        }
         #info {
             position: absolute;
             top: 20px;
@@ -30,20 +20,19 @@
     </style>
 </head>
 <body>
-    <div id="loading">Lade Showroom... ⏳</div>
     <div id="info">ℹ️ Touch-Bedienung:<br>• 1 Finger drehen<br>• 2 Finger zoomen</div>
 
     <a-scene 
-        environment="preset: forest; dressingAmount: 1000; shadow: true"
-        xr-mode-ui="enabled: true" 
+        xr-mode-ui="enabled: true"
         vr-mode-ui="enabled: true"
+        background="color: #333333"
     >
         <!-- 3D-Auto -->
         <a-entity
             id="car"
             gltf-model="url(assets/car.glb)"
-            scale="0.1 0.1 0.1"
-            position="0 0 -3"
+            scale="0.5 0.5 0.5"
+            position="0 0 -2"
             rotation="0 90 0"
         ></a-entity>
 
@@ -51,23 +40,30 @@
         <a-entity 
             camera
             look-controls
-            position="0 1.6 4"
-            cursor="rayOrigin: mouse"
+            position="0 1.6 3"
         ></a-entity>
+
+        <!-- Beleuchtung -->
+        <a-entity light="type: ambient; intensity: 1.0"></a-entity>
+        <a-entity light="type: directional; intensity: 1.5; position: 2 5 3"></a-entity>
+        
+        <!-- Boden -->
+        <a-circle 
+            position="0 0 0" 
+            radius="5" 
+            rotation="-90 0 0" 
+            color="#444444"
+            metalness="0.3"
+            roughness="0.5"
+        ></a-circle>
     </a-scene>
 
     <script>
-        // Touch-Steuerung
         const car = document.querySelector('#car');
         let isTouching = false;
         let startTouch1, startTouch2;
-        let startScale = 0.1;
+        let startScale = 0.5;
         let startRotation = { x: 0, y: 0 };
-
-        // Ladebalken ausblenden
-        document.querySelector('a-scene').addEventListener('loaded', () => {
-            document.getElementById('loading').style.display = 'none';
-        });
 
         // Touch-Events
         car.addEventListener('touchstart', (e) => {
@@ -99,7 +95,7 @@
             if(!isTouching) return;
             e.preventDefault();
 
-            // Ein-Finger-Rotation
+            // Rotation
             if(e.touches.length === 1) {
                 const deltaX = e.touches[0].clientX - startTouch1.x;
                 const deltaY = e.touches[0].clientY - startTouch1.y;
@@ -111,7 +107,7 @@
                 });
             }
 
-            // Zwei-Finger-Zoom
+            // Zoom
             if(e.touches.length === 2) {
                 const touch1 = { 
                     x: e.touches[0].clientX, 
@@ -127,13 +123,16 @@
                     startTouch2.y - startTouch1.y
                 );
                 
+                if(initialDistance === 0) return; // Verhindert Division durch Null
+
                 const currentDistance = Math.hypot(
                     touch2.x - touch1.x,
                     touch2.y - touch1.y
                 );
 
                 const scale = Math.min(
-                    Math.max(startScale * (currentDistance / initialDistance), 0.3),
+                    Math.max(startScale * (currentDistance / initialDistance), 
+                    0.3, 
                     1.5
                 );
                 car.setAttribute('scale', `${scale} ${scale} ${scale}`);
